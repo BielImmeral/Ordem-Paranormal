@@ -1,0 +1,477 @@
+import os
+
+# Dicionário de preços das armas corpo a corpo
+armas_corpo_a_corpo = {
+    0: {"Faca": 20, "Martelo": 25, "Punhal": 35, "Bastão": 60, "Machete": 45, "Lança": 70, "Cajado": 65, "Machadinha": 80, "Nunchaku": 90, "Corrente": 90},
+    1: {"Espada": 200, "Florete": 170, "Machado": 160, "Maça": 150, "Acha": 130, "Gadanho": 130, "Katana": 250, "Marreta": 190, "Montante": 180, "Motoserra": 220}
+}
+
+# Dicionário de preços das armas de fogo
+armas_fogo = {
+    1: {"Pistola": 250, "Revólver": 250, "Fuzil de Caça": 400, "Submetralhadora": 500, "Espingarda": 450},
+    2: {"Fuzil de Assalto": 600, "Metralhadora": 750},
+    3: {"Fuzil de Precisão": 700, "Bazuca": 1000, "Lança-Chamas": 1200}
+}
+
+# Dicionário de preços das armas de disparo
+armas_disparo = {
+    0: {"Arco": 150, "Besta": 200},
+    1: {"Arco Composto": 300, "Balestra": 325}
+}
+
+# Dicionário de pesos das armas
+pesos_armas = {
+    "Faca": 1, "Martelo": 1, "Punhal": 1, "Bastão": 1, "Machete": 1, "Lança": 1, "Cajado": 2, "Machadinha": 1, "Nunchaku": 1, "Corrente": 1,
+    "Espada": 1, "Florete": 1, "Machado": 1, "Maça": 1, "Acha": 2, "Gadanho": 2, "Katana": 2, "Marreta": 2, "Montante": 2, "Motoserra": 2,
+    "Pistola": 1, "Revólver": 1, "Fuzil de Caça": 2, "Submetralhadora": 1, "Espingarda": 2, "Fuzil de Assalto": 2, "Metralhadora": 2, "Fuzil de Precisão": 2,
+    "Bazuca": 2, "Lança-Chamas": 2, "Arco": 2, "Besta": 2, "Arco Composto": 2, "Balestra": 2
+}
+
+# Dicionário de modificações para armas corpo a corpo
+modificacoes_corpo_a_corpo = {
+    "Certeira": {"custo": 50, "descricao": "+2 em testes de ataque."},
+    "Cruel": {"custo": 75, "descricao": "+2 em rolagens de dano."},
+    "Discreta": {"custo": 40, "descricao": "+5 em testes para ser ocultada e reduz o espaço em –1."},
+    "Perigosa": {"custo": 55, "descricao": "+2 em margem de ameaça."},
+    "Tática": {"custo": 40, "descricao": "Pode sacar como ação livre."}
+}
+
+# Dicionário de modificações para armas de fogo
+modificacoes_fogo = {
+    "Alongada": {"custo": 70, "descricao": "+2 em testes de ataque."},
+    "Calibre Grosso": {"custo": 205, "descricao": "Aumenta o dano em mais um dado do mesmo tipo."},
+    "Compensador": {"custo": 130, "descricao": "Anula penalidade por rajadas."},
+    "Discreta": {"custo": 50, "descricao": "+5 em testes para ser ocultada e reduz o espaço em –1."},
+    "Ferrolho Automático": {"custo": 70, "descricao": "A arma se torna automática."},
+    "Mira Laser": {"custo": 125, "descricao": "+2 em margem de ameaça."},
+    "Mira Telescópica": {"custo": 80, "descricao": "Aumenta alcance da arma e da habilidade Ataque Furtivo."},
+    "Silenciador": {"custo": 65, "descricao": "Reduz em –10 a penalidade em Furtividade para se esconder após atacar."},
+    "Tática": {"custo": 50, "descricao": "Pode sacar como ação livre."},
+    "Visão de Calor": {"custo": 105, "descricao": "Ignora camuflagem."}
+}
+
+# Dicionário de modificações para armas de disparo (mesmas que as armas corpo a corpo)
+modificacoes_disparo = modificacoes_corpo_a_corpo.copy()
+
+# Dicionário de patentes e limites por categoria
+patentes = {
+    0: [40, 2, 0, 0, 0],
+    1: [40, 3, 1, 0, 0],
+    2: [40, 3, 2, 1, 0],
+    3: [40, 3, 3, 2, 1],
+    4: [40, 3, 3, 3, 2]
+}
+
+# Nomes das patentes
+patente_nomes = {
+    0: "Recruta",
+    1: "Operador",
+    2: "Agente Especial",
+    3: "Oficial de Operações",
+    4: "Agente de Elite"
+}
+
+# Função para limpar a tela
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+# Função para calcular a categoria base da arma
+def categoria_base_arma(arma):
+    if arma in armas_corpo_a_corpo[0] or arma in armas_disparo[0]:
+        return 0
+    elif arma in armas_corpo_a_corpo[1] or arma in armas_fogo[1] or arma in armas_disparo[1]:
+        return 1
+    elif arma in armas_fogo[2]:
+        return 2
+    elif arma in armas_fogo[3]:
+        return 3
+    return 0
+
+# Função para obter a lista de todas as armas com tipo, preço e categoria base
+def obter_lista_todas_armas():
+    todas_armas = []
+    for categoria, armas in armas_corpo_a_corpo.items():
+        for nome, preco in armas.items():
+            todas_armas.append((nome, preco, categoria, "Corpo a Corpo"))
+    for categoria, armas in armas_fogo.items():
+        for nome, preco in armas.items():
+            todas_armas.append((nome, preco, categoria, "Fogo"))
+    for categoria, armas in armas_disparo.items():
+        for nome, preco in armas.items():
+            todas_armas.append((nome, preco, categoria, "Disparo"))
+    return todas_armas
+
+# Função para exibir os limites de itens por categoria da patente
+def exibir_limites_patente(patente_numero):
+    limites = patentes[patente_numero][1:]
+    categorias = ["Categoria 1", "Categoria 2", "Categoria 3", "Categoria 4"]
+    print(f"\nLimites da patente {patente_nomes[patente_numero]}:")
+    for i, limite in enumerate(limites):
+        print(f"- Você tem um limite de {limite} Itens de {categorias[i]}")
+
+# Função para comprar armas
+def comprar_armas(patente_numero, dinheiro_usuario, forca_usuario, mochilas_usuario, armas_escolhidas=None, espaco_total=0):
+    limite_por_categoria = patentes[patente_numero]
+    max_espaco = min(20, forca_usuario * 5 + mochilas_usuario)
+    if armas_escolhidas is None:
+        armas_escolhidas = {0: {}, 1: {}, 2: {}, 3: {}, 4: {}}
+    
+    todas_armas = obter_lista_todas_armas()
+
+    while True:
+        limpar_tela()
+        print("Lista de todas as armas disponíveis:")
+        for idx, (nome, preco, categoria, tipo) in enumerate(todas_armas):
+            peso = pesos_armas[nome]
+            print(f"{idx}: {nome} ({tipo}) - {preco} créditos, Peso: {peso} (Categoria: {categoria})")
+
+        print(f"Saldo atual: {dinheiro_usuario} créditos")
+        print(f"Espaço total disponível: {max_espaco - espaco_total}")
+
+        entrada = input(f"Digite o número da arma e a quantidade desejada (ex: 0:3) ou pressione Enter para sair: ")
+        if entrada.lower() == '':
+            break
+
+        try:
+            num_arma, quantidade = entrada.split(":")
+            num_arma = int(num_arma)
+            quantidade = int(quantidade)
+            nome, preco, categoria, tipo = todas_armas[num_arma]
+            peso = pesos_armas[nome]
+
+            # Verifica se a quantidade excede o limite permitido para esta categoria
+            quantidade_atual = sum(len(instancias) for instancias in armas_escolhidas[categoria].values())
+            if quantidade_atual + quantidade > limite_por_categoria[categoria]:
+                print("Quantidade excede o limite permitido para esta categoria.")
+                input("Pressione Enter para continuar...")
+                continue
+
+            if dinheiro_usuario < preco * quantidade:
+                print("Dinheiro insuficiente.")
+                input("Pressione Enter para continuar...")
+                continue
+
+            if espaco_total + peso * quantidade > max_espaco:
+                print("Espaço insuficiente.")
+                input("Pressione Enter para continuar...")
+                continue
+
+            for _ in range(quantidade):
+                if nome in armas_escolhidas[categoria]:
+                    armas_escolhidas[categoria][nome].append({})
+                else:
+                    armas_escolhidas[categoria][nome] = [{}]
+
+            dinheiro_usuario -= preco * quantidade
+            espaco_total += peso * quantidade
+            print(f"Comprou {quantidade}x {nome}. Saldo atual: {dinheiro_usuario} créditos.")
+            input("Pressione Enter para continuar...")
+
+        except (ValueError, IndexError):
+            print("Entrada inválida. Tente novamente.")
+            input("Pressione Enter para continuar...")
+
+    return armas_escolhidas, espaco_total, dinheiro_usuario
+
+# Função para comprar modificações
+def comprar_modificacoes(patente_numero, armas_compradas, dinheiro_usuario):
+    if input("Você deseja adicionar modificações? (S/N): ").lower() != 's':
+        return dinheiro_usuario
+
+    modificacoes_escolhidas = {arma: [[] for _ in instancias] for categoria in armas_compradas.values() for arma, instancias in categoria.items()}
+    limite_por_categoria = patentes[patente_numero]
+
+    for categoria, armas in armas_compradas.items():
+        for arma, instancias in armas.items():
+            for i in range(len(instancias)):
+                while True:
+                    limpar_tela()
+                    print(f"\nQuantas modificações você deseja aplicar em {arma} (arma {i + 1})?")
+                    try:
+                        num_modificacoes = int(input())
+                        if num_modificacoes < 0:
+                            print("Número de modificações deve ser positivo.")
+                            continue
+                        break
+                    except ValueError:
+                        print("Entrada inválida. Por favor, digite um número.")
+
+                for _ in range(num_modificacoes):
+                    while True:
+                        limpar_tela()
+                        if arma in armas_corpo_a_corpo[0] or arma in armas_corpo_a_corpo[1]:
+                            print(f"Modificações disponíveis para armas corpo a corpo:")
+                            for mod, info in modificacoes_corpo_a_corpo.items():
+                                print(f"{mod} ({info['custo']}): {info['descricao']}")
+                        elif arma in armas_fogo[1] or arma in armas_fogo[2] or arma in armas_fogo[3]:
+                            print(f"Modificações disponíveis para armas de fogo:")
+                            for mod, info in modificacoes_fogo.items():
+                                print(f"{mod} ({info['custo']}): {info['descricao']}")
+                        elif arma in armas_disparo[0] or arma in armas_disparo[1]:
+                            print(f"Modificações disponíveis para armas de disparo:")
+                            for mod, info in modificacoes_disparo.items():
+                                print(f"{mod} ({info['custo']}): {info['descricao']}")
+
+                        modificacao = input("Digite o nome da modificação: ")
+
+                        if arma in armas_corpo_a_corpo[0] or arma in armas_corpo_a_corpo[1]:
+                            if modificacao in modificacoes_corpo_a_corpo:
+                                custo_modificacao = modificacoes_corpo_a_corpo[modificacao]["custo"]
+                                if dinheiro_usuario >= custo_modificacao:
+                                    nova_categoria = categoria_base_arma(arma) + len(modificacoes_escolhidas[arma][i]) + 1
+                                    if nova_categoria > 3 or (nova_categoria > 0 and limite_por_categoria[nova_categoria - 1] < len(instancias)):
+                                        print("Número de modificações excede o limite permitido pela patente.")
+                                        input("Pressione Enter para continuar...")
+                                        break
+                                    dinheiro_usuario -= custo_modificacao
+                                    modificacoes_escolhidas[arma][i].append(modificacao)
+                                    print(f"Comprou a modificação {modificacao} para {arma}. Saldo atual: {dinheiro_usuario}")
+                                    break
+                                else:
+                                    print("Dinheiro insuficiente para essa modificação.")
+                            else:
+                                print("Modificação inválida.")
+                        elif arma in armas_fogo[1] or arma in armas_fogo[2] or arma in armas_fogo[3]:
+                            if modificacao in modificacoes_fogo:
+                                custo_modificacao = modificacoes_fogo[modificacao]["custo"]
+                                if dinheiro_usuario >= custo_modificacao:
+                                    nova_categoria = categoria_base_arma(arma) + len(modificacoes_escolhidas[arma][i]) + 1
+                                    if nova_categoria > 3 or (nova_categoria > 0 and limite_por_categoria[nova_categoria - 1] < len(instancias)):
+                                        print("Número de modificações excede o limite permitido pela patente.")
+                                        input("Pressione Enter para continuar...")
+                                        break
+                                    dinheiro_usuario -= custo_modificacao
+                                    modificacoes_escolhidas[arma][i].append(modificacao)
+                                    print(f"Comprou a modificação {modificacao} para {arma}. Saldo atual: {dinheiro_usuario}")
+                                    break
+                                else:
+                                    print("Dinheiro insuficiente para essa modificação.")
+                            else:
+                                print("Modificação inválida.")
+                        elif arma in armas_disparo[0] or arma in armas_disparo[1]:
+                            if modificacao in modificacoes_disparo:
+                                custo_modificacao = modificacoes_disparo[modificacao]["custo"]
+                                if dinheiro_usuario >= custo_modificacao:
+                                    nova_categoria = categoria_base_arma(arma) + len(modificacoes_escolhidas[arma][i]) + 1
+                                    if nova_categoria > 3 or (nova_categoria > 0 and limite_por_categoria[nova_categoria - 1] < len(instancias)):
+                                        print("Número de modificações excede o limite permitido pela patente.")
+                                        input("Pressione Enter para continuar...")
+                                        break
+                                    dinheiro_usuario -= custo_modificacao
+                                    modificacoes_escolhidas[arma][i].append(modificacao)
+                                    print(f"Comprou a modificação {modificacao} para {arma}. Saldo atual: {dinheiro_usuario}")
+                                    break
+                                else:
+                                    print("Dinheiro insuficiente para essa modificação.")
+                            else:
+                                print("Modificação inválida.")
+                    input("Pressione Enter para continuar...")
+
+    for categoria, armas in armas_compradas.items():
+        for arma, instancias in armas.items():
+            for i in range(len(instancias)):
+                instancias[i]["modificacoes"] = modificacoes_escolhidas[arma][i]
+
+    return dinheiro_usuario
+
+# Função para exibir o inventário
+def exibir_inventario(armas_compradas, espaco_total, max_espaco, dinheiro_restante):
+    limpar_tela()
+    print(f"\nDinheiro restante após a compra: {dinheiro_restante}")
+    print(f"Espaço total utilizado: {espaco_total} / {max_espaco}\n")
+
+    print("Inventário:")
+    for categoria, armas in armas_compradas.items():
+        for arma, instancias in armas.items():
+            for i, instancia in enumerate(instancias):
+                num_modificacoes = len(instancia.get("modificacoes", []))
+                modificacoes_str = ", ".join(instancia.get("modificacoes", [])) if num_modificacoes else "Nenhuma"
+                peso = pesos_armas[arma]
+                print(f"{arma} (Categoria: {categoria_base_arma(arma) + num_modificacoes}) (Peso: {peso}) (Modificações: {modificacoes_str})")
+
+    input("\nPressione Enter para sair...")  # Pausa no final
+
+# Função para obter entrada válida para patente
+def obter_patente():
+    while True:
+        try:
+            patente_numero = int(input("Digite o número da sua patente: "))
+            if patente_numero in patente_nomes:
+                return patente_numero
+            else:
+                print(f"Valor incorreto. Digite um número entre 0 e {len(patente_nomes) - 1}.")
+        except ValueError:
+            print("Entrada inválida. Por favor, digite um número.")
+
+# Função para vender armas e reembolsar o usuário
+def vender_armas(armas_compradas, dinheiro_usuario, espaco_total):
+    todas_armas = obter_lista_todas_armas()
+    nome_arma_categoria = {(nome, categoria): preco for nome, preco, categoria, tipo in todas_armas}
+
+    while True:
+        limpar_tela()
+        print("Armas compradas:")
+        for categoria, armas in armas_compradas.items():
+            print(f"Categoria {categoria + 1}:")
+            for arma, instancias in armas.items():
+                print(f"  {arma} - Quantidade: {len(instancias)}")
+
+        print(f"Saldo atual: {dinheiro_usuario} créditos")
+        print(f"Espaço utilizado: {espaco_total}")
+
+        entrada = input("Digite o nome da arma que deseja vender ou pressione Enter para sair: ")
+        if entrada.lower() == '':
+            break
+
+        arma_selecionada = None
+        for categoria, armas in armas_compradas.items():
+            if entrada in armas and len(armas[entrada]) > 0:
+                arma_selecionada = (categoria, entrada)
+                break
+
+        if arma_selecionada is None:
+            print("Arma não encontrada ou quantidade insuficiente. Tente novamente.")
+            input("Pressione Enter para continuar...")
+            continue
+
+        categoria, nome_arma = arma_selecionada
+
+        while True:
+            limpar_tela()
+            preco_venda = nome_arma_categoria.get((nome_arma, categoria), 0)
+            print(f"Preço de venda por unidade de {nome_arma}: {preco_venda} créditos")
+            print(f"Quantidade disponível para venda: {len(armas_compradas[categoria][nome_arma])}")
+
+            entrada_quant = input("Digite a quantidade que deseja vender ou pressione Enter para sair: ")
+            if entrada_quant.lower() == '':
+                break
+
+            try:
+                quantidade_venda = int(entrada_quant)
+                if quantidade_venda > len(armas_compradas[categoria][nome_arma]):
+                    print("Quantidade insuficiente. Tente novamente.")
+                    input("Pressione Enter para continuar...")
+                    continue
+
+                peso_arma = pesos_armas[nome_arma]
+                for _ in range(quantidade_venda):
+                    if armas_compradas[categoria][nome_arma]:
+                        armas_compradas[categoria][nome_arma].pop()
+
+                if len(armas_compradas[categoria][nome_arma]) == 0:
+                    del armas_compradas[categoria][nome_arma]
+
+                dinheiro_usuario += preco_venda * quantidade_venda
+                espaco_total -= peso_arma * quantidade_venda
+                print(f"Vendeu {quantidade_venda}x {nome_arma}. Saldo atual: {dinheiro_usuario} créditos.")
+                input("Pressione Enter para continuar...")
+                break
+
+            except ValueError:
+                print("Entrada inválida. Tente novamente.")
+                input("Pressione Enter para continuar...")
+
+    return armas_compradas, dinheiro_usuario, espaco_total
+
+# Função para obter entrada válida para dinheiro
+def obter_dinheiro():
+    while True:
+        try:
+            dinheiro_usuario = float(input("Digite quanto dinheiro você tem: "))
+            if dinheiro_usuario >= 0:
+                return dinheiro_usuario
+            else:
+                print("O valor do dinheiro deve ser positivo.")
+        except ValueError:
+            print("Entrada inválida. Por favor, digite um valor numérico.")
+
+# Função para obter entrada válida para força
+def obter_forca():
+    while True:
+        try:
+            forca_usuario = int(input("Digite sua força (0 para cima): "))
+            if forca_usuario >= 0:
+                return forca_usuario
+            else:
+                print("O valor da força deve ser 0 ou maior.")
+        except ValueError:
+            print("Entrada inválida. Por favor, digite um número.")
+
+# Função para obter entrada válida para mochilas
+def obter_mochilas():
+    while True:
+        try:
+            mochilas_usuario = str(input("Você possui mochila (S/N): "))
+            if mochilas_usuario.lower() == 's':
+                return 2
+            elif mochilas_usuario.lower() == 'n':
+                return 0
+            else:
+                print("Digite 'S' ou 'N'")
+        except ValueError:
+            print("Entrada inválida. Por favor, digite uma letra.")
+
+# Programa principal
+def main():
+    while True:
+        try:
+            limpar_tela()
+            print("Bem-vindo à loja de armas!")
+
+            for num, nome in patente_nomes.items():
+                print(f"{num}: {nome}")
+
+            patente_numero = obter_patente()
+            exibir_limites_patente(patente_numero)  # Exibe os limites da patente escolhida
+            input("Pressione Enter para continuar...")  # Pausa antes de continuar
+
+            dinheiro_usuario = obter_dinheiro()
+            forca_usuario = obter_forca()
+            mochilas_usuario = obter_mochilas()
+
+            armas_compradas, espaco_total, dinheiro_restante = comprar_armas(patente_numero, dinheiro_usuario, forca_usuario, mochilas_usuario)
+            dinheiro_restante = comprar_modificacoes(patente_numero, armas_compradas, dinheiro_restante)
+
+            exibir_inventario(armas_compradas, espaco_total, min(20, forca_usuario * 5 + mochilas_usuario), dinheiro_restante)
+
+            while True:
+                compra_completa = input("Sua compra está completa? (S/N): ").lower()
+                if compra_completa.lower() == 's':
+                    break
+                elif compra_completa.lower() == 'n':
+                    while True:
+                        opcao = input("Deseja adicionar mais itens? (S/N): ").lower()
+                        if opcao.lower() == 's':
+                            armas_compradas, espaco_total, dinheiro_restante = comprar_armas(patente_numero, dinheiro_restante, forca_usuario, mochilas_usuario, armas_compradas, espaco_total)
+                            dinheiro_restante = comprar_modificacoes(patente_numero, armas_compradas, dinheiro_restante)
+                            exibir_inventario(armas_compradas, espaco_total, min(20, forca_usuario * 5 + mochilas_usuario), dinheiro_restante)
+                        elif opcao.lower() == 'n':
+                            break
+                        else:
+                            print("Opção inválida. Tente novamente.")
+
+                    while True:
+                        opcao = input("Deseja remover algum item? (S/N): ").lower()
+                        if opcao.lower() == 's':
+                            armas_compradas, dinheiro_restante, espaco_total = vender_armas(armas_compradas, dinheiro_restante, espaco_total)
+                            exibir_inventario(armas_compradas, espaco_total, min(20, forca_usuario * 5 + mochilas_usuario), dinheiro_restante)
+                        elif opcao.lower() == 'n':
+                            break
+                        else:
+                            print("Opção inválida. Tente novamente.")
+                else:
+                    print("Opção inválida. Tente novamente.")
+
+            end = input("Deseja sair? (S/N): ")
+            if end.lower() == 's':
+                break
+            elif end.lower() == 'n':
+                continue
+            else:
+                print("Opção inválida. Tente novamente.")
+
+        except ValueError:
+            print("Entrada inválida. Por favor, digite um número.")
+
+if __name__ == "__main__":
+    main()
